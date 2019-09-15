@@ -1,17 +1,21 @@
 import React, { useState } from 'react';
-import zxcvbn from 'zxcvbn';
 import './style.css';
-import PasswordStrengthMeter from '../../components/passwordStrengthMeter';
+import PasswordStrengthMeter from '../../components/PasswordStrengthMeter';
 import { Link } from 'react-router-dom';
-
 import logo from '../../assets/logo.png';
+const firebase = require('firebase/app');
 
+require('firebase/auth');
+const { firebaseConfig } = require('../../config');
+
+firebase.initializeApp(firebaseConfig);
 
 export default function Signup({ history }) {
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [passwordType, setPasswordType] = useState('password');
     const [passwordView, setPasswordView] = useState('mostrar');
-    const [score, setScore] = useState('');
 
     async function togglePasswordView(e) {
         if (passwordType === "text") {
@@ -23,44 +27,53 @@ export default function Signup({ history }) {
             setPasswordView("esconder");
         }
     }
-    async function updatePassword(e) {
-        setPassword(e.target.value);
-        const result = zxcvbn(password);
-        setScore(result.score);
+
+    async function handleSubmit(e) {
+        e.preventDefault();
+
+        await firebase.auth().createUserWithEmailAndPassword(email, password).catch(function (error) {
+            var errorCode = error.code;
+            var errorMessage = error.message;
+        });
+
     }
 
     return (
         <div className="signup-container">
             <img src={logo} id="logo" alt="Project Together" />
-            <form className="signup-form">
+            <form className="signup-form" onSubmit={handleSubmit}>
                 <header>
-                    <div className="title">
-                        Criar conta
-                    </div>
-                    <Link to="/login">
-                        Já tem uma conta? <span>Login</span>.
-                    </Link>
+                    <div className="title">Criar conta</div>
+                    <Link to="/login">Já tem uma conta? <span>Login</span>.</Link>
                 </header>
                 <div className="form-group">
                     <label htmlFor="name">Nome</label>
-                    <input type="text" name="name" id="name" placeholder="Digite o nome" />
-                </div>
-                <div className="form-group">
-                    <label htmlFor="username">Usuário</label>
-                    <input type="text" name="username" id="username" placeholder="Digite um nome de acesso" />
+                    <input
+                        id="name"
+                        type="text"
+                        value={name}
+                        onChange={e => setName(e.target.value)} />
                 </div>
                 <div className="form-group">
                     <label htmlFor="email">Email</label>
-                    <input type="email" name="email" id="email" placeholder="Digite seu email" />
+                    <input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={e => setEmail(e.target.value)} />
                 </div>
                 <div className="form-group">
                     <label htmlFor="password">Senha</label>
                     <section className="password">
-                        <input type={passwordType} name="password" id="password" value={password} onChange={updatePassword} placeholder="Digite uma senha" />
+                        <input
+                            id="password"
+                            type={passwordType}
+                            value={password}
+                            onChange={e => setPassword(e.target.value)} />
                         <label onClick={togglePasswordView}>{passwordView}</label>
                     </section>
 
-                    <PasswordStrengthMeter score={score} />
+                    <PasswordStrengthMeter className="passwordMeterBar" password={password} />
                 </div>
                 <div className="terms">
                     <input type="checkbox" name="accept_terms" id="accept_terms" />
@@ -68,7 +81,7 @@ export default function Signup({ history }) {
                 </div>
 
                 <footer>
-                    <button type="Submit">Prosseguir</button>
+                    <button type="Submit" >Prosseguir</button>
                 </footer>
             </form>
         </div>
