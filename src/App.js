@@ -1,7 +1,9 @@
 import React from 'react';
 import './styles/app.css';
-
 import Routes from './routes'
+import { SetLang } from 'functions/Localize';
+
+SetLang('pt-BR');
 
 function App() {
   return (
@@ -9,4 +11,4 @@ function App() {
   );
 }
 
-export default App;
+export default App; 
